@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  etl:
+    container_name: ugc_etl
+    build:
+      context: .
+    volumes:
+      - ./.env:/app/.env
+    command: "python3 run.py"
+    depends_on:
+      - clickhouse
+    networks:
+      - ugc_network
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    environment:
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_LOG4J_LOGGERS: "org.apache.kafka=INFO,org.apache.zookeeper=ERROR"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://kafka:29092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      CLUSTER_ID: "oZMds9qoTPe0BWuRTyd2_w"
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+      - "29092:29092"
+    volumes:
+      - ./data/kafka:/var/lib/kafka/data
+    networks:
+      - ugc_network
+
+  clickhouse:
+    image: yandex/clickhouse-server:latest
+    container_name: clickhouse
+    depends_on:
+      - kafka
+    volumes:
+      - ./data/clickhouse/data:/var/lib/clickhouse
+    environment:
+      - CLICKHOUSE_DB=${CLICKHOUSE_DB}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASS}
+    networks:
+      - ugc_network
+
+  nginx:
+    image: nginx:latest
+    container_name: ugc_etl_nginx
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./configs:/etc/nginx/conf.d:ro
+    depends_on:
+      - etl
+    ports:
+      - "80:80"
+    networks:
+      - ugc_network
+
+networks:
+  ugc_network:
+    driver: bridge
