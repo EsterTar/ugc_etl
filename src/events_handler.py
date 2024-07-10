@@ -10,4 +10,4 @@ clickhouse_client = get_clickhouse_client()
 
 async def start_handler():
     async for event in kafka_consumer_events.consume_message():
-        clickhouse_client.save_events(event)
+        await clickhouse_client.save_events(event)

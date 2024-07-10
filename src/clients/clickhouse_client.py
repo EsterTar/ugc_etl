@@ -1,3 +1,4 @@
+import json
 from abc import ABC, abstractmethod
 from functools import lru_cache
 
@@ -16,15 +17,17 @@ class ClickhouseClientBase(ABC):
 
 class ClickhouseClient(ClickhouseClientBase):
 
-    def __init__(self, host: str, port: int = None):
+    def __init__(self, host: str, user: str, password: str):
         self._client: Client = Client(
-            host=f'{host}:{port}'
+            host=f'{host}',
+            user=user,
+            password=password
         )
 
-    async def save_events(self, event_data: str) -> bool:
-        prepared_data = [(event_data,)]
+    async def save_events(self, event_data: dict) -> bool:
+        prepared_data = [(json.dumps(event_data),)]
 
-        await self._client.execute(
+        self._client.execute(
             "INSERT INTO events (event) VALUES",
             prepared_data
         )
@@ -34,6 +37,8 @@ class ClickhouseClient(ClickhouseClientBase):
 @lru_cache
 def get_clickhouse_client():
     client = ClickhouseClient(
-        host=settings.clickhouse_host
+        host=settings.clickhouse_host,
+        user=settings.clickhouse_user,
+        password=settings.clickhouse_pass
     )
     return client

@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     events_topic: str
 
     clickhouse_host: str
+    clickhouse_user: str
+    clickhouse_pass: str
 
     class Config:
         env_file = ".env"

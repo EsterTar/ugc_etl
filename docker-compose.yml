@@ -33,8 +33,6 @@ services:
       - "9092:9092"
       - "9093:9093"
       - "29092:29092"
-    volumes:
-      - ./data/kafka:/var/lib/kafka/data
     networks:
       - ugc_network
 
@@ -46,6 +44,7 @@ services:
       - kafka
     volumes:
       - ./data/clickhouse/data:/var/lib/clickhouse
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - CLICKHOUSE_DB=${CLICKHOUSE_DB}
       - CLICKHOUSE_USER=${CLICKHOUSE_USER}
@@ -61,6 +60,7 @@ services:
       - ./configs:/etc/nginx/conf.d:ro
     depends_on:
       - etl
+      - clickhouse
     ports:
       - "80:80"
     networks:
@@ -68,4 +68,5 @@ services:
 
 networks:
   ugc_network:
-    driver: bridge
+    external: true
+
