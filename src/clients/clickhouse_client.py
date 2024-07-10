@@ -21,11 +21,11 @@ class ClickhouseClient(ClickhouseClientBase):
             host=f'{host}:{port}'
         )
 
-    async def save_events(self, data: list[dict]) -> bool:
-        prepared_data = [(event['column1'], event['column2']) for event in data]
+    async def save_events(self, event_data: str) -> bool:
+        prepared_data = [(event_data,)]
 
-        self._client.execute(
-            "INSERT INTO events (column1, column2) VALUES",
+        await self._client.execute(
+            "INSERT INTO events (event) VALUES",
             prepared_data
         )
         return True

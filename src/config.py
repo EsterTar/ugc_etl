@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     logger: CustomizeLogger | None = None
 
     kafka_bootstrap_server: str
-    kafka_consumer_tasks: KafkaConsumerClient | None = None
+    kafka_consumer_events: KafkaConsumerClient | None = None
     events_topic: str
 
     clickhouse_host: str
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
             self.log_format
         )
 
-        self.kafka_consumer_tasks = KafkaConsumerClient(
+        self.kafka_consumer_events = KafkaConsumerClient(
             bootstrap_server=self.kafka_bootstrap_server,
             consumer_topic=self.events_topic,
             consumer_group=f'events',

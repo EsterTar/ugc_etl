@@ -38,6 +38,7 @@ services:
     networks:
       - ugc_network
 
+
   clickhouse:
     image: yandex/clickhouse-server:latest
     container_name: clickhouse

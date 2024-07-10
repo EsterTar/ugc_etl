@@ -35,11 +35,12 @@ class KafkaConsumerClient:
                     auto_offset_reset='earliest'
                 )
                 await self._consumer.start()
+                self._logger.info('Consumer started.')
+                break
             except KafkaConnectionError as connection_error:
                 if attempt == attempts_count - 1:
                     raise connection_error
                 await asyncio.sleep(10)
-        self._logger.info('Consumer started.')
 
     async def stop(self):
         self._logger.info('Stopping consumer.')

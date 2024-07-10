@@ -7,8 +7,7 @@ settings = config.get_settings()
 
 async def main():
 
-    await settings.kafka_consumer_tasks.start()
-    await settings.kafka_producer_results.start()
+    await settings.kafka_consumer_events.start()
 
     print('Starting task handler.')
     consumer_task = asyncio.create_task(start_handler())
