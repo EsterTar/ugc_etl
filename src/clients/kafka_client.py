@@ -32,7 +32,8 @@ class KafkaConsumerClient:
                     self._consumer_topic,
                     bootstrap_servers=self._bootstrap_server,
                     group_id=self._consumer_group,
-                    auto_offset_reset='earliest'
+                    auto_offset_reset='earliest',
+                    enable_auto_commit=False
                 )
                 await self._consumer.start()
                 self._logger.info('Consumer started.')
@@ -45,12 +46,20 @@ class KafkaConsumerClient:
     async def stop(self):
         self._logger.info('Stopping consumer.')
         await self._consumer.stop()
+        self._consumer = None
         self._logger.info('Consumer stopped.')
 
-    async def consume_message(self):
+    async def consume_messages(self, batch_size: int):
+        messages = []
         async for msg in self._consumer:
             key = msg.key.decode('utf-8') if msg.key else None
             value = msg.value.decode('utf-8') if msg.value else None
             data = json.loads(value)
             self._logger.info(f'Message consumed. Key: {key}. Data: {data}.')
-            yield data
+            messages.append(data)
+            if len(messages) >= batch_size:
+                break
+        return messages
+
+    async def commit(self):
+        await self._consumer.commit()

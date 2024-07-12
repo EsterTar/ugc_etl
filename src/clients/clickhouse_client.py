@@ -6,6 +6,7 @@ from clickhouse_driver import Client
 import config
 
 settings = config.get_settings()
+logger = settings.logger
 
 
 class ClickhouseClientBase(ABC):
@@ -24,14 +25,17 @@ class ClickhouseClient(ClickhouseClientBase):
             password=password
         )
 
-    async def save_events(self, event_data: dict) -> bool:
-        prepared_data = [(json.dumps(event_data),)]
-
-        self._client.execute(
-            "INSERT INTO events (event) VALUES",
-            prepared_data
-        )
-        return True
+    async def save_events(self, event_data: list[dict]) -> bool:
+        prepared_data = [(json.dumps(event),) for event in event_data]
+        try:
+            await self._client.execute(
+                "INSERT INTO events (event) VALUES",
+                prepared_data
+            )
+            return True
+        except Exception as e:
+            logger.error(f'Failed to save events: {e}')
+            return False
 
 
 @lru_cache

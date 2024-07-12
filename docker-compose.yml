@@ -38,7 +38,7 @@ services:
 
 
   clickhouse:
-    image: yandex/clickhouse-server:23.3.2.20
+    image: yandex/clickhouse-server:20.9.2.20
     container_name: clickhouse
     depends_on:
       - kafka
