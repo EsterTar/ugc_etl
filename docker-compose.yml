@@ -14,7 +14,7 @@ services:
       - ugc_network
 
   kafka:
-    image: confluentinc/cp-kafka:latest
+    image: confluentinc/cp-kafka:7.4.0
     environment:
       KAFKA_PROCESS_ROLES: broker,controller
       KAFKA_NODE_ID: 1
@@ -38,7 +38,7 @@ services:
 
 
   clickhouse:
-    image: yandex/clickhouse-server:latest
+    image: yandex/clickhouse-server:23.3.2.20
     container_name: clickhouse
     depends_on:
       - kafka
